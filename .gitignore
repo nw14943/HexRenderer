@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+CMakeCache.txt
+CMakeFiles/*
+CPackConfig.cmake
+CPackSourceConfig.cmake
+Makefile
+_deps/
+cmake_install.cmake
+compile_commands.json
+hexRenderer
