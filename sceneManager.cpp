@@ -1,23 +1,51 @@
 #include "sceneManager.h"
+#include "constants.h"
 #include "graphics.h"
 
 int SceneManager::scene = 0;
+bool SceneManager::renderBackground = true;
+bool SceneManager::renderForeground = true;
+bool SceneManager::renderCanvas = true;
 
-void SceneManager::changeScene(int scene) { SceneManager::scene = scene; }
+std::vector<std::vector<Color>>
+    SceneManager::background(CANVASX, std::vector<Color>(CANVASY, GRAY));
+
+void SceneManager::changeScene(int scene) {
+  SceneManager::scene = scene;
+  renderBackground = true;
+}
 
 // Preps the background and foreground
 void SceneManager::drawScene() {
-  ogstream::clearForeground();
-  ogstream::clearCanvas();
-  ogstream::changeTarget(2);
+  if (renderForeground) {
+    ogstream::clearForeground();
+    renderForeground = false;
+  }
+  if (renderBackground) {
+    ogstream::clearBackground();
+    renderBackground = false;
+  }
+  if (renderCanvas) {
+    ogstream::clearCanvas();
+    renderCanvas = false;
+  }
+  ogstream::changeTarget(1);
   switch (scene) {
   case 0: {
-    // const char *text = "Press Enter to start";
-    // double size = 20.0;
-    // Vector2 text_size = MeasureTextEx(GetFontDefault(), text, size, 1.0);
-    // Vector2 position = {(float)((ogstream::getWidth() - text_size.x) / 2.0),
-    //                     (float)((ogstream::getHeight() - text_size.y) / 2.0)};
-    // ogstream::drawText(text, position, size, LIGHTGRAY);
+    ogstream::draw2DArrayHex2(SceneManager::background);
+    break;
+  }
+  case 1: {
+    ogstream::draw2DArraySqr(SceneManager::background);
+    break;
+  }
+  case 2: {
+    ogstream::draw2DArrayHex3(SceneManager::background);
+    break;
+  }
+  case 3: {
+    // ogstream::fillHex3(0,0);
+    ogstream::draw3Radial(10, 10);
     break;
   }
   default: {
