@@ -23,9 +23,9 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
 endif()
 
 add_executable(hexRenderer
-    hexRenderer.cpp
-    graphics.cpp
-    sceneManager.cpp
+    src/hexRenderer.cpp
+    src/graphics.cpp
+    src/sceneManager.cpp
     )
 
 target_link_libraries(${PROJECT_NAME} raylib)

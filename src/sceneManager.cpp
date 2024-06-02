@@ -1,6 +1,6 @@
-#include "sceneManager.h"
-#include "constants.h"
-#include "graphics.h"
+#include "../headers/sceneManager.h"
+#include "../headers/constants.h"
+#include "../headers/graphics.h"
 
 int SceneManager::scene = 0;
 bool SceneManager::renderBackground = true;
@@ -19,17 +19,20 @@ void SceneManager::changeScene(int scene) {
 void SceneManager::drawScene() {
   if (renderForeground) {
     ogstream::clearForeground();
-    renderForeground = false;
+    // renderForeground = false;
+    renderForeground = true;
   }
   if (renderBackground) {
     ogstream::clearBackground();
-    renderBackground = false;
+    // renderBackground = false;
+    renderBackground = true;
   }
   if (renderCanvas) {
     ogstream::clearCanvas();
-    renderCanvas = false;
+    // renderCanvas = false;
+    renderCanvas = true;
   }
-  ogstream::changeTarget(1);
+  ogstream::changeTarget(0);
   switch (scene) {
   case 0: {
     ogstream::draw2DArrayHex2(SceneManager::background);

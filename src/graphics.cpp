@@ -1,5 +1,5 @@
-#include "graphics.h"
-#include "constants.h"
+#include "../headers/graphics.h"
+#include "../headers/constants.h"
 #include "raylib.h"
 #include <cstdlib>
 #include <vector>
@@ -10,6 +10,9 @@ RenderTexture2D ogstream::foreground = RenderTexture2D();
 int ogstream::currentTarget = 0;
 int ogstream::canvasWidth = 0;
 int ogstream::canvasHeight = 0;
+int ogstream::displayWidth = 0;
+int ogstream::displayHeight = 0;
+float ogstream::scale = 1.0f;
 
 void ogstream::startTarget() {
   switch (currentTarget) {
@@ -67,23 +70,88 @@ Vector2 ogstream::getMousePosition() {
   Vector2 adjMousePos = Vector2{x, y};
   return adjMousePos;
 }
-void ogstream::draw() {
+Vector2 ogstream::getMouseCanvasPosition() {
+  Vector2 rawMousePos = GetMousePosition();
+  float screenWidth = GetScreenWidth();
+  float screenHeight = GetScreenHeight();
+  float x;
+  float y;
+  bool testX =
+      rawMousePos.x >= offsetLeft && rawMousePos.x <= displayWidth + offsetLeft;
+  bool testY =
+      rawMousePos.y >= offsetTop && rawMousePos.y <= displayHeight + offsetTop;
+
+  // if ((canvasWidth / screenWidth) < (canvasHeight / screenHeight)) {
+  // } else {
+  // }
+
+  if (testX) {
+    x = (rawMousePos.x / screenWidth) * canvasWidth;
+  } else {
+    return Vector2();
+  }
+  if (testY) {
+    y = (rawMousePos.y / screenHeight) * canvasHeight;
+  } else {
+    return Vector2();
+  }
+
+  return Vector2{x, y};
+}
+void ogstream::draw() { //FIX THIS
   BeginDrawing();
+  ClearBackground(GRAY);
   // Draw Textures Here
   double screenwidth = GetScreenWidth();
   double screenheight = GetScreenHeight();
-  DrawTexturePro(background.texture,
-                 (Rectangle){0, 0, (float)canvasWidth, (float)-canvasHeight},
-                 (Rectangle){0, 0, (float)screenwidth, (float)screenheight},
-                 (Vector2){0, 0}, 0.0, WHITE);
-  DrawTexturePro(canvas.texture,
-                 (Rectangle){0, 0, (float)canvasWidth, (float)-canvasHeight},
-                 (Rectangle){0, 0, (float)screenwidth, (float)screenheight},
-                 (Vector2){0, 0}, 0.0, WHITE);
-  DrawTexturePro(foreground.texture,
-                 (Rectangle){0, 0, (float)canvasWidth, (float)-canvasHeight},
-                 (Rectangle){0, 0, (float)screenwidth, (float)screenheight},
-                 (Vector2){0, 0}, 0.0, WHITE);
+  ogstream::displayWidth = screenwidth - offsetRight - offsetLeft;
+  ogstream::displayHeight = screenheight - offsetBottom - offsetTop;
+  if (displayWidth < 0.0) {
+    displayWidth = 0.0;
+  }
+  if (displayHeight < 0.0) {
+    displayHeight = 0.0;
+  }
+  // if ((displayWidth / CANVASX) < (displayHeight / CANVASY)) {
+  //   displayHeight = (displayWidth / CANVASX) * CANVASY;
+  // } else {
+  //   displayWidth = (displayHeight / CANVASY) * CANVASX;
+  // }
+  // canvasHeight = displayHeight;
+  // canvasWidth = displayWidth;
+  float zoom = 1.0 / scale;
+  float adjCanvasHeight = canvasHeight * zoom;
+  float adjCanvasWidth = canvasWidth * zoom;
+  float adjOffsetY = canvasHeight - adjCanvasHeight;
+  // float adjOffsetX = canvasWidth - adjCanvasWidth;
+  float adjOffsetX = 0.0f;
+  DrawTexturePro(
+      background.texture,
+      (Rectangle){0.0, 0.0, (float)displayWidth,
+                  (float)-displayHeight},
+      (Rectangle){adjOffsetX, adjOffsetY, (float)adjCanvasWidth, (float)adjCanvasHeight},
+      (Vector2){-offsetLeft, -offsetTop}, 0.0, WHITE);
+  DrawRectangleRec((Rectangle){offsetLeft, offsetTop, (float)displayWidth,
+          (float)displayHeight},
+          DARKGRAY);
+  DrawTexturePro(
+      canvas.texture,
+      (Rectangle){0.0, 0.0, (float)canvasWidth,
+                  (float)-canvasHeight},
+      (Rectangle){adjOffsetX, adjOffsetY, (float)adjCanvasWidth, (float)adjCanvasHeight},
+      (Vector2){-offsetLeft, -offsetTop}, 0.0, WHITE);
+  DrawTexturePro(
+      foreground.texture,
+      (Rectangle){0.0, 0.0, (float)displayWidth,
+                  (float)-displayHeight},
+      (Rectangle){adjOffsetX, adjOffsetY, (float)adjCanvasWidth, (float)adjCanvasHeight},
+      (Vector2){-offsetLeft, -offsetTop}, 0.0, WHITE);
+  DrawRectangleLinesEx((Rectangle){offsetLeft, offsetTop, (float)displayWidth,
+                                   (float)displayHeight},
+                       1.0, WHITE);
+  DrawRectangleRec((Rectangle){(float)(offsetLeft + displayWidth + 50.0),
+                               offsetTop, (float)50.0, (float)50.0},
+                   WHITE);
   EndDrawing();
 }
 void ogstream::drawText(const char *text, int x, int y, double size,
@@ -231,3 +299,6 @@ void ogstream::drawFPS() {
   EndTextureMode();
 }
 void ogstream::changeTarget(int target) { currentTarget = target; }
+float ogstream::getZoom() { return 1.0f / scale; }
+float ogstream::getScale() { return scale; }
+void ogstream::changeScale(bool positive) { scale += (positive) ? 0.1 : -0.1; };

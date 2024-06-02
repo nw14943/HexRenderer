@@ -1,9 +1,11 @@
-#include "constants.h"
-#include "graphics.h"
+#include "../headers/constants.h"
+#include "../headers/graphics.h"
 #include "raylib.h"
-#include "sceneManager.h"
+#include "../headers/sceneManager.h"
 #include <cmath>
 #include <iostream>
+#include <numeric>
+#include <string>
 #include <vector>
 
 //------------------------------------------------------------------------------------
@@ -15,7 +17,7 @@ int main(void) {
 
   bool pause = false;
   bool debug = false;
-  bool select = false;
+  bool select = true;
   int selectX = 0;
   int selectY = 0;
   double time_last_update = 0.0;
@@ -32,6 +34,8 @@ int main(void) {
       color.g = y * (int)(255 / CANVASY);
       color.b = 0;
       scene.background[x][y] = color;
+      if (x == 0 || y == 0)
+        scene.background[x][y] = Color{0, 0, 0, 0};
     }
   }
   std::cout << "Init done" << std::endl;
@@ -44,10 +48,8 @@ int main(void) {
     //----------------------------------------------------------------------------------
     // TODO: Update your variables here
     //----------------------------------------------------------------------------------
-    if (IsKeyDown(KEY_LEFT_SHIFT))
-      debug = true;
-    else
-      debug = false;
+    if (IsKeyPressed(KEY_LEFT_SHIFT))
+      debug = !debug;
     if (IsKeyPressed(KEY_SPACE))
       // pause = !pause;
       debug = !debug;
@@ -62,14 +64,18 @@ int main(void) {
 
     if (IsKeyPressed(KEY_S))
       select = !select;
-    if (IsKeyPressed(KEY_DOWN))
-      selectY += 1;
-    if (IsKeyPressed(KEY_UP))
-      selectY -= 1;
-    if (IsKeyPressed(KEY_RIGHT))
-      selectX += 1;
-    if (IsKeyPressed(KEY_LEFT))
-      selectX -= 1;
+    if (IsKeyPressed(KEY_DOWN)) {
+      // selectY += 1;
+    }
+    if (IsKeyPressed(KEY_UP)) {
+      // selectY -= 1;
+    }
+    if (IsKeyPressed(KEY_RIGHT)) {
+      // selectX += 1;
+    }
+    if (IsKeyPressed(KEY_LEFT)) {
+      // selectX -= 1;
+    }
 
     if (IsKeyPressed(KEY_W)) {
       selectY -= 1;
@@ -94,9 +100,29 @@ int main(void) {
       selectX -= 1;
     }
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        Vector2 pos = gout.getMousePosition();
-        selectY = (pos.y+(RADIUS/2.0))/(RADIUS * 1.5);
-        selectX = (pos.x+((selectY%2)?0.0:(RADIUS/0.866)))/(RADIUS * 1.732);
+      // Vector2 pos = gout.getMousePosition();
+      Vector2 pos = gout.getMouseCanvasPosition();
+      // Gout::GetCanvasMousePosition()
+      selectY = gout.getZoom() * (pos.y + (RADIUS / 2.0)) / (RADIUS * 1.5);
+      selectX = gout.getZoom() *
+                    (pos.x + ((selectY % 2) ? 0.0 : (RADIUS / 0.866))) /
+                    (RADIUS * 1.732)
+                ;
+      // selectY = pos.y;
+      // selectX = pos.x;
+    }
+    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+      // Vector2 pos = gout.getMousePosition();
+      Vector2 pos = gout.getMouseCanvasPosition();
+      // Gout::GetCanvasMousePosition()
+      int selectedY = (pos.y + (RADIUS / 2.0)) / (RADIUS * 1.5);
+      int selectedX = (pos.x + ((selectedY % 2) ? 0.0 : (RADIUS / 0.866))) /
+                      (RADIUS * 1.732);
+      SceneManager::background[selectedX][selectedY] = WHITE;
+    }
+    float mouseWheelMove = GetMouseWheelMove();
+    if (mouseWheelMove != 0.0f) {
+      gout.changeScale(mouseWheelMove > 0);
     }
 
     // Draw
@@ -109,6 +135,15 @@ int main(void) {
     if (debug) {
       gout.changeTarget(2);
       gout.drawFPS();
+      // gout.drawText() //Draw selectX and selectY
+      // char * xCoord;
+      // char * yCoord;
+      // xCoord = std::to_string(selectX);
+      gout.drawText(
+          (std::to_string(selectX) + ", " + std::to_string(selectY)).c_str(),
+          Vector2{50.0, 50.0}, 50, WHITE);
+      gout.drawText((std::to_string(mouseWheelMove)).c_str(),
+              Vector2{50.0, 150.0}, 50, WHITE);
       SceneManager::renderForeground = true;
     }
     if (select) {
@@ -116,6 +151,7 @@ int main(void) {
       gout.drawHexagonAdj(selectX, selectY, Color{255, 255, 255, 200});
       SceneManager::renderCanvas = true;
     }
+
 
     //----------------------------------------------------------------------------------
     // Draw the Screen

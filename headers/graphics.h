@@ -11,9 +11,13 @@ private:
   static RenderTexture2D background; // target 1
   // Foreground is used primarily for particles/effects
   static RenderTexture2D foreground; // target 2
+  // static Shader shader;
   static int currentTarget;
   static int canvasWidth;
   static int canvasHeight;
+  static int displayWidth;
+  static int displayHeight;
+  static float scale;
   static void startTarget();
   static int windowBox;
 
@@ -27,6 +31,7 @@ public:
   static int getFPS();
   static float getFrameTime();
   static Vector2 getMousePosition();
+  static Vector2 getMouseCanvasPosition();
   static void draw();
   static void drawText(const char *text, Vector2 position, double size,
                        Color color);
@@ -48,5 +53,8 @@ public:
   static void changeTarget(int target);
   static int getWidth();
   static int getHeight();
+  static float getZoom();
+  static float getScale();
+  static void changeScale(bool positive);
   static void drawFPS();
 };
