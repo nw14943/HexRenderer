@@ -2,6 +2,7 @@
 
 #include "raylib.h"
 #include <vector>
+#include <functional>
 
 class ogstream {
 private:
@@ -11,14 +12,15 @@ private:
   static RenderTexture2D background; // target 1
   // Foreground is used primarily for particles/effects
   static RenderTexture2D foreground; // target 2
-  // static Shader shader;
+  static Shader shader;
   static int currentTarget;
+  static int currentShader;
   static int canvasWidth;
   static int canvasHeight;
   static int displayWidth;
   static int displayHeight;
   static float scale;
-  static void startTarget();
+  // static void startTarget();
   static int windowBox;
 
 public:
@@ -51,10 +53,15 @@ public:
   static void draw2DArraySqr(std::vector<std::vector<Color>> pic,
                              int offsetX = 0, int offsetY = 0);
   static void changeTarget(int target);
+  static void changeShader(int target);
   static int getWidth();
   static int getHeight();
   static float getZoom();
   static float getScale();
   static void changeScale(bool positive);
   static void drawFPS();
+  static void useShader(std::function<void()> func);
+  static void useShader(int target, std::function<void()> func);
+  static void useTexture(std::function<void()> func);
+  static void useTexture(int target, std::function<void()> func);
 };

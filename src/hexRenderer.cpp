@@ -1,7 +1,7 @@
 #include "../headers/constants.h"
 #include "../headers/graphics.h"
-#include "raylib.h"
 #include "../headers/sceneManager.h"
+#include "raylib.h"
 #include <cmath>
 #include <iostream>
 #include <numeric>
@@ -61,6 +61,8 @@ int main(void) {
       scene.changeScene(2);
     if (IsKeyPressed(KEY_THREE))
       scene.changeScene(3);
+    if (IsKeyPressed(KEY_FOUR))
+      scene.changeScene(4);
 
     if (IsKeyPressed(KEY_S))
       select = !select;
@@ -99,26 +101,30 @@ int main(void) {
     if (IsKeyPressed(KEY_A)) {
       selectX -= 1;
     }
+    // if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+    // Vector2 pos = gout.getMousePosition();
+    Vector2 pos = gout.getMouseCanvasPosition();
+    // Gout::GetCanvasMousePosition()
+    selectY = gout.getZoom() * (pos.y + (RADIUS / 2.0)) / (RADIUS * 1.5);
+    selectX = gout.getZoom() *
+              (pos.x + ((selectY % 2) ? 0.0 : (RADIUS / 0.866))) /
+              (RADIUS * 1.732);
+    // selectY = pos.y;
+    // selectX = pos.x;
+    // }
+    // if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      // Vector2 pos = gout.getMousePosition();
-      Vector2 pos = gout.getMouseCanvasPosition();
-      // Gout::GetCanvasMousePosition()
-      selectY = gout.getZoom() * (pos.y + (RADIUS / 2.0)) / (RADIUS * 1.5);
-      selectX = gout.getZoom() *
-                    (pos.x + ((selectY % 2) ? 0.0 : (RADIUS / 0.866))) /
-                    (RADIUS * 1.732)
-                ;
-      // selectY = pos.y;
-      // selectX = pos.x;
-    }
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
       // Vector2 pos = gout.getMousePosition();
       Vector2 pos = gout.getMouseCanvasPosition();
       // Gout::GetCanvasMousePosition()
       int selectedY = (pos.y + (RADIUS / 2.0)) / (RADIUS * 1.5);
       int selectedX = (pos.x + ((selectedY % 2) ? 0.0 : (RADIUS / 0.866))) /
                       (RADIUS * 1.732);
+      // Possible out of bounds error FIXME:
       SceneManager::background[selectedX][selectedY] = WHITE;
+    }
+    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+        // TODO: Panning changes canvas offset
     }
     float mouseWheelMove = GetMouseWheelMove();
     if (mouseWheelMove != 0.0f) {
@@ -135,7 +141,10 @@ int main(void) {
     if (debug) {
       gout.changeTarget(2);
       gout.drawFPS();
-      // gout.drawText() //Draw selectX and selectY
+      Vector2 pos = gout.getMouseCanvasPosition();
+      gout.drawText(
+          (std::to_string(pos.x) + " " + std::to_string(pos.y)).c_str(),
+          Vector2{50.0, 100.0}, 50, WHITE);
       // char * xCoord;
       // char * yCoord;
       // xCoord = std::to_string(selectX);
@@ -143,7 +152,7 @@ int main(void) {
           (std::to_string(selectX) + ", " + std::to_string(selectY)).c_str(),
           Vector2{50.0, 50.0}, 50, WHITE);
       gout.drawText((std::to_string(mouseWheelMove)).c_str(),
-              Vector2{50.0, 150.0}, 50, WHITE);
+                    Vector2{50.0, 150.0}, 50, WHITE);
       SceneManager::renderForeground = true;
     }
     if (select) {
@@ -151,7 +160,6 @@ int main(void) {
       gout.drawHexagonAdj(selectX, selectY, Color{255, 255, 255, 200});
       SceneManager::renderCanvas = true;
     }
-
 
     //----------------------------------------------------------------------------------
     // Draw the Screen
