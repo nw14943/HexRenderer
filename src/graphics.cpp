@@ -2,6 +2,7 @@
 #include "../headers/constants.h"
 #include "raylib.h"
 #include <cstdlib>
+#include <iostream>
 #include <vector>
 
 RenderTexture2D ogstream::canvas = RenderTexture2D();
@@ -13,22 +14,11 @@ int ogstream::currentTarget = 0;
 int ogstream::currentShader = 0;
 int ogstream::canvasWidth = 0;
 int ogstream::canvasHeight = 0;
+double ogstream::canvasStartX = 0;
+double ogstream::canvasStartY = 0;
 int ogstream::displayWidth = 0;
 int ogstream::displayHeight = 0;
 float ogstream::scale = 1.0f;
-
-// void ogstream::startTarget() {
-//   switch (currentTarget) {
-//   case 1:
-//     BeginTextureMode(background);
-//     break;
-//   case 2:
-//     BeginTextureMode(foreground);
-//     break;
-//   default:
-//     BeginTextureMode(canvas);
-//   }
-// }
 
 ogstream::ogstream(int width, int height) {
   canvasWidth = width;
@@ -42,6 +32,7 @@ ogstream::ogstream(int width, int height) {
   clearForeground();
   clearBackground();
 }
+
 ogstream::~ogstream() {
   UnloadRenderTexture(canvas);
   UnloadRenderTexture(background);
@@ -49,21 +40,25 @@ ogstream::~ogstream() {
   UnloadShader(shader);
   CloseWindow();
 }
+
 void ogstream::clearCanvas() {
   BeginTextureMode(canvas);
   ClearBackground(BLANK);
   EndTextureMode();
 }
+
 void ogstream::clearBackground() {
   BeginTextureMode(background);
   ClearBackground(BLACK);
   EndTextureMode();
 }
+
 void ogstream::clearForeground() {
   BeginTextureMode(foreground);
   ClearBackground(BLANK);
   EndTextureMode();
 }
+
 bool ogstream::shouldClose() { return WindowShouldClose(); }
 int ogstream::getFPS() { return GetFPS(); }
 float ogstream::getFrameTime() { return GetFrameTime(); }
@@ -74,6 +69,7 @@ Vector2 ogstream::getMousePosition() {
   Vector2 adjMousePos = Vector2{x, y};
   return adjMousePos;
 }
+
 Vector2 ogstream::getMouseCanvasPosition() {
   Vector2 rawMousePos = GetMousePosition();
   float screenWidth = GetScreenWidth();
@@ -90,18 +86,19 @@ Vector2 ogstream::getMouseCanvasPosition() {
   // }
 
   if (testX) {
-    x = (rawMousePos.x / screenWidth) * canvasWidth;
+    x = ((rawMousePos.x - canvasStartX) / screenWidth) * canvasWidth;
   } else {
     return Vector2();
   }
   if (testY) {
-    y = (rawMousePos.y / screenHeight) * canvasHeight;
+    y = ((rawMousePos.y - canvasStartY) / screenHeight) * canvasHeight;
   } else {
     return Vector2();
   }
 
   return Vector2{x, y};
 }
+
 void ogstream::draw() {
   BeginDrawing();
   ClearBackground(GRAY);
@@ -126,9 +123,12 @@ void ogstream::draw() {
   float zoom = 1.0 / scale;
   float adjCanvasHeight = canvasHeight * zoom;
   float adjCanvasWidth = canvasWidth * zoom;
-  float adjOffsetY = canvasHeight - adjCanvasHeight;
+  // float adjOffsetY = canvasHeight - adjCanvasHeight;
+  // float adjOffsetY = 0.0f;
+  float adjOffsetY = canvasStartY;
   // float adjOffsetX = canvasWidth - adjCanvasWidth;
-  float adjOffsetX = 0.0f;
+  // float adjOffsetX = 0.0f;
+  float adjOffsetX = canvasStartX;
   DrawTexturePro(
       background.texture,
       (Rectangle){0.0, 0.0, (float)displayWidth, (float)-displayHeight},
@@ -147,8 +147,9 @@ void ogstream::draw() {
   DrawTexturePro(
       foreground.texture,
       (Rectangle){0.0, 0.0, (float)canvasWidth, (float)-canvasHeight},
-      (Rectangle){adjOffsetX, adjOffsetY, (float)canvasWidth,
-                  (float)canvasHeight},
+      // (Rectangle){adjOffsetX, adjOffsetY, (float)canvasWidth,
+      //             (float)canvasHeight},
+      (Rectangle){0.0, 0.0, (float)screenwidth, (float)screenwidth},
       (Vector2){-offsetLeft, -offsetTop}, 0.0, WHITE);
   DrawRectangleLinesEx((Rectangle){offsetLeft, offsetTop, (float)displayWidth,
                                    (float)displayHeight},
@@ -158,11 +159,15 @@ void ogstream::draw() {
                    WHITE);
   EndDrawing();
 }
+
 void ogstream::drawText(const char *text, int x, int y, double size,
                         Color color) {
-  drawText(text, (Vector2){(float)x, (float)y}, size, color);
-  EndTextureMode();
+  // drawText(text, (Vector2){(float)x, (float)y}, size, color);
+  // EndTextureMode();
+  ogstream::useTexture(
+      [&]() { drawText(text, (Vector2){(float)x, (float)y}, size, color); });
 }
+
 void ogstream::drawText(const char *text, Vector2 position, double size,
                         Color color) {
   // ogstream::startTarget();
@@ -172,12 +177,14 @@ void ogstream::drawText(const char *text, Vector2 position, double size,
     DrawTextEx(GetFontDefault(), text, position, size, 1.0, color);
   });
 }
+
 void ogstream::drawCircle(double x, double y, double radius, Color color) {
   // ogstream::startTarget();
   // DrawCircle(x, y, radius, color);
   // EndTextureMode();
   ogstream::useTexture([&]() { DrawCircle(x, y, radius, color); });
 }
+
 void ogstream::drawRectangle(double x, double y, double height, double width,
                              Color color) {
   // ogstream::startTarget();
@@ -185,6 +192,7 @@ void ogstream::drawRectangle(double x, double y, double height, double width,
   // EndTextureMode();
   ogstream::useTexture([&]() { DrawRectangle(x, y, height, width, color); });
 }
+
 void ogstream::drawSquareAdj(int x, int y, Color color) {
   // ogstream::startTarget();
   // DrawRectangle(x * RADIUS * 1.5, y * RADIUS * 1.5, RADIUS * 1.5, RADIUS
@@ -195,6 +203,7 @@ void ogstream::drawSquareAdj(int x, int y, Color color) {
                   RADIUS * 1.5, color);
   });
 }
+
 void ogstream::drawHexagon(double x, double y, double radius, Color color) {
   // ogstream::startTarget();
   // DrawCircle(x, y, radius, GRAY);
@@ -207,6 +216,7 @@ void ogstream::drawHexagon(double x, double y, double radius, Color color) {
     DrawPolyLines(Vector2{(float)x, (float)y}, 6, radius, 90.0, GREEN);
   });
 }
+
 void ogstream::drawHexagonAdj(int x, int y, Color color) {
   double xScale = RADIUS * 1.732 * x + ((y % 2) ? RADIUS * 0.866 : 0.0);
   double yScale = RADIUS * 1.5 * y;
@@ -214,11 +224,28 @@ void ogstream::drawHexagonAdj(int x, int y, Color color) {
   // DrawPoly(Vector2{(float)xScale, (float)yScale}, 6, RADIUS, 00.0, color);
   // DrawPolyLines(Vector2{(float)xScale, (float)yScale}, 6, RADIUS, 90.0,
   // GREEN);
-  EndTextureMode();
+  // EndTextureMode();
   ogstream::useTexture([&]() {
     DrawPoly(Vector2{(float)xScale, (float)yScale}, 6, RADIUS, 00.0, color);
   });
 }
+
+void ogstream::drawHexagonAdjShader(int x, int y, Color color) {
+  double xScale = RADIUS * 1.732 * x + ((y % 2) ? RADIUS * 0.866 : 0.0);
+  double yScale = RADIUS * 1.5 * y;
+  // ogstream::startTarget();
+  // DrawPoly(Vector2{(float)xScale, (float)yScale}, 6, RADIUS, 00.0, color);
+  // DrawPolyLines(Vector2{(float)xScale, (float)yScale}, 6, RADIUS, 90.0,
+  // GREEN);
+  // EndTextureMode();
+  ogstream::useShader([&]() {
+    ogstream::useTexture([&]() {
+      DrawPoly(Vector2{(float)xScale, (float)yScale}, 6, RADIUS, 00.0, color);
+      std::cout << "Shader draw" << std::endl;
+    });
+  });
+}
+
 void ogstream::draw2DArrayHex2(std::vector<std::vector<Color>> pic, int offsetX,
                                int offsetY) {
   Color color{0, 0, 255, 255};
@@ -228,6 +255,7 @@ void ogstream::draw2DArrayHex2(std::vector<std::vector<Color>> pic, int offsetX,
     }
   }
 }
+
 void ogstream::draw2DArrayHex3(std::vector<std::vector<Color>> pic) {
   Color color{0, 0, 0, 255};
   int xOffset = 2;
@@ -240,6 +268,17 @@ void ogstream::draw2DArrayHex3(std::vector<std::vector<Color>> pic) {
     }
   }
 }
+
+void ogstream::draw2DArrayHex4(std::vector<std::vector<Color>> pic, int offsetX,
+                               int offsetY) {
+  Color color{0, 0, 255, 255};
+  for (int x = offsetX; x < pic.size(); x++) {
+    for (int y = offsetY; y < pic[x].size(); y++) {
+      drawHexagonAdj(x, y, pic[x][y]);
+    }
+  }
+}
+
 void ogstream::fillHex3(int offsetX, int offsetY) {
   Color color{0, 0, 0, 255};
   int xOffset = 2;
@@ -255,6 +294,7 @@ void ogstream::fillHex3(int offsetX, int offsetY) {
     }
   }
 }
+
 void ogstream::draw2DArraySqr(std::vector<std::vector<Color>> pic, int offsetX,
                               int offsetY) {
   Color color{0, 0, 255, 255};
@@ -264,6 +304,7 @@ void ogstream::draw2DArraySqr(std::vector<std::vector<Color>> pic, int offsetX,
     }
   }
 }
+
 void ogstream::draw3Radial(int x, int y, Color color) {
   if (x <= 0 || y <= 0 || x >= CANVASX || y >= CANVASY)
     return;
@@ -311,8 +352,11 @@ void ogstream::draw3Radial(int x, int y, Color color) {
       draw3Radial(y + 1, y, color);
   }
 }
+
 int ogstream::getWidth() { return canvasWidth; }
+
 int ogstream::getHeight() { return canvasHeight; }
+
 void ogstream::drawFPS() {
   // BeginTextureMode(foreground);
   // ogstream::startTarget();
@@ -320,11 +364,17 @@ void ogstream::drawFPS() {
   // EndTextureMode();
   ogstream::useTexture(2, [&]() { DrawFPS(10, 10); });
 }
+
 void ogstream::changeTarget(int target) { currentTarget = target; }
+
 void ogstream::changeShader(int target) { currentShader = target; }
+
 float ogstream::getZoom() { return 1.0f / scale; }
+
 float ogstream::getScale() { return scale; }
+
 void ogstream::changeScale(bool positive) { scale += (positive) ? 0.1 : -0.1; };
+
 void ogstream::useShader(std::function<void()> func) {
   switch (currentShader) {
   default:
@@ -333,6 +383,7 @@ void ogstream::useShader(std::function<void()> func) {
     EndShaderMode();
   }
 }
+
 void ogstream::useShader(int target, std::function<void()> func) {
   switch (target) {
   default:
@@ -341,6 +392,7 @@ void ogstream::useShader(int target, std::function<void()> func) {
     EndShaderMode();
   }
 }
+
 void ogstream::useTexture(std::function<void()> func) {
   switch (currentTarget) {
   case 1:
@@ -358,7 +410,8 @@ void ogstream::useTexture(std::function<void()> func) {
     func();
     EndTextureMode();
   }
-};
+}
+
 void ogstream::useTexture(int target, std::function<void()> func) {
   switch (target) {
   case 1:
@@ -376,4 +429,9 @@ void ogstream::useTexture(int target, std::function<void()> func) {
     func();
     EndTextureMode();
   }
-};
+}
+
+void ogstream::moveCanvas(double x, double y) {
+  canvasStartX += x;
+  canvasStartY += y;
+}

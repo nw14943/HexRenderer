@@ -17,6 +17,8 @@ private:
   static int currentShader;
   static int canvasWidth;
   static int canvasHeight;
+  static double canvasStartX;
+  static double canvasStartY;
   static int displayWidth;
   static int displayHeight;
   static float scale;
@@ -42,12 +44,15 @@ public:
   static void drawCircle(double x, double y, double radius, Color color);
   static void drawHexagon(double x, double y, double radius, Color color);
   static void drawHexagonAdj(int x, int y, Color color);
+  static void drawHexagonAdjShader(int x, int y, Color color);
   static void drawSquareAdj(int x, int y, Color color);
   static void drawRectangle(double x, double y, double height, double width,
                             Color color);
   static void draw2DArrayHex2(std::vector<std::vector<Color>> pic,
                               int offsetX = 0, int offsetY = 0);
   static void draw2DArrayHex3(std::vector<std::vector<Color>> pic);
+  static void draw2DArrayHex4(std::vector<std::vector<Color>> pic,
+                              int offsetX = 0, int offsetY = 0);
   static void fillHex3(int x, int y);
   static void draw3Radial(int x, int y, Color color = Color{255, 0, 0, 255});
   static void draw2DArraySqr(std::vector<std::vector<Color>> pic,
@@ -64,4 +69,5 @@ public:
   static void useShader(int target, std::function<void()> func);
   static void useTexture(std::function<void()> func);
   static void useTexture(int target, std::function<void()> func);
+  static void moveCanvas(double x, double y);
 };

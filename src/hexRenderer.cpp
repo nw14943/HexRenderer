@@ -63,6 +63,8 @@ int main(void) {
       scene.changeScene(3);
     if (IsKeyPressed(KEY_FOUR))
       scene.changeScene(4);
+    if (IsKeyPressed(KEY_FIVE))
+      scene.changeScene(5);
 
     if (IsKeyPressed(KEY_S))
       select = !select;
@@ -101,18 +103,13 @@ int main(void) {
     if (IsKeyPressed(KEY_A)) {
       selectX -= 1;
     }
-    // if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-    // Vector2 pos = gout.getMousePosition();
+
     Vector2 pos = gout.getMouseCanvasPosition();
-    // Gout::GetCanvasMousePosition()
     selectY = gout.getZoom() * (pos.y + (RADIUS / 2.0)) / (RADIUS * 1.5);
     selectX = gout.getZoom() *
               (pos.x + ((selectY % 2) ? 0.0 : (RADIUS / 0.866))) /
               (RADIUS * 1.732);
-    // selectY = pos.y;
-    // selectX = pos.x;
-    // }
-    // if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
       // Vector2 pos = gout.getMousePosition();
       Vector2 pos = gout.getMouseCanvasPosition();
@@ -123,10 +120,14 @@ int main(void) {
       // Possible out of bounds error FIXME:
       SceneManager::background[selectedX][selectedY] = WHITE;
     }
+
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
         // TODO: Panning changes canvas offset
+        Vector2 delta = GetMouseDelta();
+        gout.moveCanvas(delta.x, delta.y);
     }
-    float mouseWheelMove = GetMouseWheelMove();
+
+    float mouseWheelMove = -GetMouseWheelMove();
     if (mouseWheelMove != 0.0f) {
       gout.changeScale(mouseWheelMove > 0);
     }

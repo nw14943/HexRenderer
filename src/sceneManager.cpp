@@ -56,6 +56,10 @@ void SceneManager::drawScene() {
     // ogstream::draw3Radial(10, 10);
     break;
   }
+  case 5: {
+    ogstream::draw2DArrayHex4(SceneManager::background);
+    break;
+  }
   default: {
     break;
   }
